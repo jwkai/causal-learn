@@ -29,6 +29,9 @@ class GraphUtils:
             return True
 
         edgenode_deque = deque([])
+        
+        # see https://github.com/py-why/causal-learn/issues/160#issuecomment-1901131905
+        prevent_recursive_ls = []
 
         for edge in graph.get_node_edges(node1):
             if edge.get_distal_node(node1) == node2:
@@ -49,7 +52,11 @@ class GraphUtils:
                     if node_c == node2:
                         return True
                     else:
-                        edgenode_deque.append((edge2, node_b))
+                        # edgenode_deque.append((edge2, node_b))
+                        # see https://github.com/py-why/causal-learn/issues/160#issuecomment-1901131905
+                        if (edge2, node_b) not in prevent_recursive_ls:
+                            edgenode_deque.append((edge2, node_b))
+                            prevent_recursive_ls.append((edge2, node_b))
 
         return False
 
