@@ -128,8 +128,8 @@ def ccpg(
     n, d = data.shape
     components, edges = ccpg_alg(set(range(d)), ci.is_ci, verbose)
 
-    print(f"Components: {components}")
-    print(f"Edges: {edges}")
+    # print(f"Components: {components}")
+    # print(f"Edges: {edges}")
 
     # build graph from edges
     k = len(components)
