@@ -1,9 +1,7 @@
 from __future__ import annotations
 
-import time
-import warnings
-from itertools import combinations, permutations
-from typing import Dict, List, Tuple, Set, Callable
+from itertools import combinations
+from typing import List, Set, Callable
 
 import networkx as nx
 from networkx.algorithms.components.connected import connected_components
@@ -116,11 +114,12 @@ def ccpg(
         alpha: float = 0.05,
         ci_test_name: str = "fisherz",
         verbose: bool = False,
+        node_names: List[str] = None,
         **kwargs
 ) -> CausalGraph:
     # Setup ci_test:
     # ci = CIT(data, ci_test_name, **kwargs)
-    ci = MemoizedCIT(data, ci_test_name, **kwargs)
+    ci = MemoizedCIT(data, ci_test_name, alpha, **kwargs)
 
     # def ci_test(i: int, j: int, cond: Set[int]) -> bool:
     #     return ci(i, j, list(cond)) > alpha
@@ -129,11 +128,24 @@ def ccpg(
     n, d = data.shape
     components, edges = ccpg_alg(set(range(d)), ci.is_ci, verbose)
 
+    print(f"Components: {components}")
+    print(f"Edges: {edges}")
+
     # build graph from edges
-    k = len(edges)
+    k = len(components)
     # make names like "{x,y}"
-    names = ["{" + ",".join(map(str, comp)) + "}" for comp in components]
-    cg = CausalGraph(k, node_names=names)
+    names: List[str]
+    if node_names is None:
+        # use integer names
+        names = ["{" + ",".join(map(str, comp)) + "}" for comp in components]
+    else:
+        if len(node_names) != d:
+            raise ValueError(f"Expected node_names of length {d}, got {len(node_names)}")
+        names = [
+            "{" + ",".join(node_names[i] for i in sorted(comp)) + "}" for comp in components
+        ]
+
+    cg = CausalGraph(k, node_names=names) # should probably use the DAG graph class instead of CausalGraph
     cg.G.remove_edges(cg.G.get_graph_edges())
     # add edges between components
     for (i, j) in edges:
