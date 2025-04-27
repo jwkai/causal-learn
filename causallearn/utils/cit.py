@@ -229,9 +229,19 @@ class KCI(CIT_Base):
         super().__init__(data, **kwargs)
         kci_ui_kwargs = {k: v for k, v in kwargs.items() if k in
                          ['kernelX', 'kernelY', 'null_ss', 'approx', 'est_width', 'polyd', 'kwidthx', 'kwidthy']}
-        kci_ci_kwargs = {k: v for k, v in kwargs.items() if k in
-                         ['kernelX', 'kernelY', 'kernelZ', 'null_ss', 'approx', 'use_gp', 'est_width', 'polyd',
-                          'kwidthx', 'kwidthy', 'kwidthz']}
+        # kci_ci_kwargs = {k: v for k, v in kwargs.items() if k in
+        #                  ['kernelX', 'kernelY', 'kernelZ', 'null_ss', 'approx', 'use_gp', 'est_width', 'polyd',
+        #                   'kwidthx', 'kwidthy', 'kwidthz']}
+        # Fix: remap 'null_ss' -> 'nullss' bug for KCI_CInd
+        kci_ci_kwargs = {}
+        for k, v in kwargs.items():
+            if k in ['kernelX', 'kernelY', 'kernelZ', 'null_ss', 'approx', 'use_gp', 'est_width', 'polyd',
+                     'kwidthx', 'kwidthy', 'kwidthz']:
+                if k == 'null_ss':
+                    kci_ci_kwargs['nullss'] = v
+                else:
+                    kci_ci_kwargs[k] = v
+
         self.check_cache_method_consistent(
             'kci', hashlib.md5(json.dumps(kci_ci_kwargs, sort_keys=True).encode('utf-8')).hexdigest())
         self.assert_input_data_is_valid()
